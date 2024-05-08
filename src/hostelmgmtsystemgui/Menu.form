@@ -46,7 +46,12 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItem4">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Student Mgmt"/>
+                <Property name="text" type="java.lang.String" value="Check-In Student"/>
+              </Properties>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem8">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Check-Out Student"/>
               </Properties>
             </MenuItem>
           </SubComponents>
