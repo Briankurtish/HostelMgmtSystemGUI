@@ -3,6 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package hostelmgmtsystemgui;
+import java.sql.Connection;
+import java.sql.*;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import net.proteanit.sql.DbUtils;
 
 /**
  *
@@ -15,6 +20,7 @@ public class HostelMgmt extends javax.swing.JFrame {
      */
     public HostelMgmt() {
         initComponents();
+        DisplayHostels();
     }
 
     /**
@@ -27,26 +33,26 @@ public class HostelMgmt extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        hostelTable = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        hostelID_F = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        location_F = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
+        hostelName_F = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
-        jTextField4 = new javax.swing.JTextField();
-        jTextField5 = new javax.swing.JTextField();
+        numRooms_F = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        addBtn = new javax.swing.JButton();
+        updateBtn = new javax.swing.JButton();
+        deleteBtn = new javax.swing.JButton();
+        clearBtn = new javax.swing.JButton();
+        statusCB = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        hostelTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null},
                 {null, null, null, null, null},
@@ -57,7 +63,12 @@ public class HostelMgmt extends javax.swing.JFrame {
                 "Hostel ID", "Hostel Name", "Location", "No of Rooms", "Availability Status"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        hostelTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                hostelTableMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(hostelTable);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI Black", 1, 24)); // NOI18N
         jLabel1.setText("HOSTEL MANAGEMENT");
@@ -66,29 +77,36 @@ public class HostelMgmt extends javax.swing.JFrame {
         jLabel2.setText("Hostel ID");
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel3.setText("Hostel Name");
+        jLabel3.setText("Location");
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel4.setText("Location");
+        jLabel4.setText("Hostel Name");
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel5.setText("No of Rooms");
+        jLabel5.setText("Availability Status");
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel6.setText("No of Rooms");
 
-        jButton1.setText("Add");
-
-        jButton2.setText("Update");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        addBtn.setText("Add");
+        addBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                addBtnActionPerformed(evt);
             }
         });
 
-        jButton3.setText("Delete");
+        updateBtn.setText("Update");
+        updateBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateBtnActionPerformed(evt);
+            }
+        });
 
-        jButton4.setText("Clear");
+        deleteBtn.setText("Delete");
+
+        clearBtn.setText("Clear");
+
+        statusCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Available", "Full" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -102,19 +120,17 @@ public class HostelMgmt extends javax.swing.JFrame {
                     .addComponent(jLabel6))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTextField3)
-                    .addComponent(jTextField1)
-                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(hostelName_F)
+                    .addComponent(hostelID_F)
+                    .addComponent(numRooms_F, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(109, 109, 109)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(location_F, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                    .addComponent(statusCB, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(45, Short.MAX_VALUE)
@@ -123,13 +139,13 @@ public class HostelMgmt extends javax.swing.JFrame {
                         .addComponent(jLabel1)
                         .addGap(321, 321, 321))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(addBtn)
                         .addGap(31, 31, 31)
-                        .addComponent(jButton2)
+                        .addComponent(updateBtn)
                         .addGap(28, 28, 28)
-                        .addComponent(jButton3)
+                        .addComponent(deleteBtn)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton4)
+                        .addComponent(clearBtn)
                         .addGap(276, 276, 276))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 885, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -143,25 +159,25 @@ public class HostelMgmt extends javax.swing.JFrame {
                 .addGap(56, 56, 56)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hostelID_F, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(location_F, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hostelName_F, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(statusCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
-                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(numRooms_F, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(29, 29, 29)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3)
-                    .addComponent(jButton4))
+                    .addComponent(addBtn)
+                    .addComponent(updateBtn)
+                    .addComponent(deleteBtn)
+                    .addComponent(clearBtn))
                 .addGap(39, 39, 39)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(49, Short.MAX_VALUE))
@@ -170,10 +186,72 @@ public class HostelMgmt extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    Connection con = null;
+Statement st = null;
+ResultSet Rs = null;
+private void DisplayHostels()
+{
+    try{
+        con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+        st = con.createStatement();
+        Rs = st.executeQuery("select * from hostel");
+        hostelTable.setModel(DbUtils.resultSetToTableModel(Rs));
+    }
+    catch(SQLException e){
+        e.printStackTrace();
+    }
+}
+    private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_updateBtnActionPerformed
 
+    private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
+        // TODO add your handling code here:
+        
+        if(hostelID_F.getText().isEmpty() || hostelName_F.getText().isEmpty() || location_F.getText().isEmpty() || numRooms_F.getText().isEmpty() || statusCB.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(this, "Missing Information. Fill all the fields to continue");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            PreparedStatement add = con.prepareStatement("insert into hostel values(?,?,?,?,?)");
+            add.setString(1, hostelID_F.getText());
+            add.setString(2, hostelName_F.getText());
+            add.setString(3, location_F.getText());
+            add.setString(4, numRooms_F.getText());
+            add.setString(5, statusCB.getSelectedItem().toString());
+            int row = add.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Hostel Added Successfully");
+            DisplayHostels();
+            Reset();
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "Error adding Hostel");
+            e.printStackTrace();
+        }}
+        
+    }//GEN-LAST:event_addBtnActionPerformed
+
+    private void hostelTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hostelTableMouseClicked
+        // TODO add your handling code here:
+        DefaultTableModel model = (DefaultTableModel)hostelTable.getModel();
+        int MyIndex = hostelTable.getSelectedRow();
+        hostelID_F.setText(model.getValueAt(MyIndex, 0).toString());
+        hostelName_F.setText(model.getValueAt(MyIndex, 1).toString());
+        location_F.setText(model.getValueAt(MyIndex, 2).toString());
+        numRooms_F.setText(model.getValueAt(MyIndex, 3).toString());
+        statusCB.setSelectedItem(model.getValueAt(MyIndex, 4).toString());
+        
+    }//GEN-LAST:event_hostelTableMouseClicked
+
+    private void Reset(){
+        hostelID_F.setText("");
+        hostelName_F.setText("");
+        location_F.setText("");
+        numRooms_F.setText("");
+        statusCB.setSelectedIndex(0);
+    }
     /**
      * @param args the command line arguments
      */
@@ -210,10 +288,12 @@ public class HostelMgmt extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
+    private javax.swing.JButton addBtn;
+    private javax.swing.JButton clearBtn;
+    private javax.swing.JButton deleteBtn;
+    private javax.swing.JTextField hostelID_F;
+    private javax.swing.JTextField hostelName_F;
+    private javax.swing.JTable hostelTable;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -221,11 +301,9 @@ public class HostelMgmt extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JTextField jTextField5;
+    private javax.swing.JTextField location_F;
+    private javax.swing.JTextField numRooms_F;
+    private javax.swing.JComboBox<String> statusCB;
+    private javax.swing.JButton updateBtn;
     // End of variables declaration//GEN-END:variables
 }
