@@ -6,8 +6,13 @@ package hostelmgmtsystemgui;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import net.proteanit.sql.DbUtils;
 
 /**
  *
@@ -21,6 +26,7 @@ public class CheckInStudent extends javax.swing.JFrame {
     public CheckInStudent() {
         initComponents();
        GetHostels();
+       DisplayStudnents();
     }
     
     Connection con = null;
@@ -44,6 +50,37 @@ ResultSet Rs = null;
         e.printStackTrace();
     }
 }
+    
+    private void DisplayStudnents()
+{
+    try{
+        con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+        st = con.createStatement();
+        Rs = st.executeQuery("select * from student");
+        checkInTable.setModel(DbUtils.resultSetToTableModel(Rs));
+    }
+    catch(SQLException e){
+        e.printStackTrace();
+    }
+}
+    
+        private void UpdateROom()
+    {
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            String roomNum = roomNumCB.getSelectedItem().toString();
+            String roomStatus = "Occupied";
+            String Query = "update room set occupancyStatus='"+roomStatus+"' where roomNumber='"+roomNum+"'";
+            Statement Add = con.createStatement();
+            Add.executeUpdate(Query);
+            JOptionPane.showMessageDialog(this, "Room Occupancy Status Updated Successfully");
+            DisplayStudnents();
+            
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -95,9 +132,14 @@ ResultSet Rs = null;
                 {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Student ID", "Name", "Gender", "Contact", "Nationality", "Hostel Name", "Room Number", "Check-in-Date"
+                "Student ID", "Name", "Gender", "Contact", "Nationality", "Room Number", "Hostel ID", "Check-in-Date"
             }
         ));
+        checkInTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                checkInTableMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(checkInTable);
 
         jLabel2.setText("Student ID");
@@ -119,8 +161,18 @@ ResultSet Rs = null;
         jLabel9.setText("Check-in-Date");
 
         addBtn.setText("Add Student");
+        addBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addBtnActionPerformed(evt);
+            }
+        });
 
         updateBtn.setText("Update Student");
+        updateBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateBtnActionPerformed(evt);
+            }
+        });
 
         deleteBtn.setText("Delete Student");
         deleteBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -275,10 +327,32 @@ ResultSet Rs = null;
 
     private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
         // TODO add your handling code here:
+        
+        if(stdID_F.getText().isEmpty())
+        {
+            JOptionPane.showMessageDialog(this, "Select The Student to be Deleted");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            int Id = Integer.valueOf(stdID_F.getText());
+            String Query = "Delete from student where studentID ='"+Id+"'";
+            Statement Add = con.createStatement();
+            Add.executeUpdate(Query);
+            JOptionPane.showMessageDialog(this, "Student Deleted Successfully");
+            DisplayStudnents();
+            Reset();
+            
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "An Error Occured");
+            e.printStackTrace();
+        }}
     }//GEN-LAST:event_deleteBtnActionPerformed
 
     private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBtnActionPerformed
         // TODO add your handling code here:
+        Reset();
     }//GEN-LAST:event_clearBtnActionPerformed
 
     private void getRoomBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getRoomBtnActionPerformed
@@ -326,6 +400,94 @@ ResultSet Rs = null;
     }
     }//GEN-LAST:event_getIDBtnActionPerformed
 
+    java.util.Date CheckInDate;
+    java.sql.Date myCheckInDate;
+    private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
+        // TODO add your handling code here:
+        
+        if(stdID_F.getText().isEmpty() || stdName_F.getText().isEmpty() || genderCB.getSelectedIndex() == -1 || contact_F.getText().isEmpty() || Nationality_F.getText().isEmpty() || hostelID_F.getText().isEmpty() || roomNumCB.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(this, "Missing Information. Fill all the fields to continue");
+        }
+        else{
+        try{
+            
+            CheckInDate = checkInDate.getDate();
+            myCheckInDate = new java.sql.Date(CheckInDate.getTime());
+
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            PreparedStatement add = con.prepareStatement("insert into student values(?,?,?,?,?,?,?,?,?)");
+            add.setString(1, stdID_F.getText());
+            add.setString(2, stdName_F.getText());
+             add.setString(3, genderCB.getSelectedItem().toString());
+            add.setString(4, contact_F.getText());
+            add.setString(5, Nationality_F.getText());
+            add.setString(6, roomNumCB.getSelectedItem().toString());
+            add.setString(7, hostelID_F.getText());
+            add.setDate(8, myCheckInDate);
+            add.setDate(9, null);
+          
+            int row = add.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Student Added Successfully");
+            DisplayStudnents();
+            UpdateROom();
+            Reset();
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "Error adding Student");
+            e.printStackTrace();
+        }}
+        
+    }//GEN-LAST:event_addBtnActionPerformed
+
+    private void checkInTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_checkInTableMouseClicked
+        // TODO add your handling code here:
+        DefaultTableModel model = (DefaultTableModel)checkInTable.getModel();
+        int MyIndex = checkInTable.getSelectedRow();
+        stdID_F.setText(model.getValueAt(MyIndex, 0).toString());
+        stdName_F.setText(model.getValueAt(MyIndex, 1).toString());
+        genderCB.setSelectedItem(model.getValueAt(MyIndex, 2).toString());
+        contact_F.setText(model.getValueAt(MyIndex, 3).toString());
+        Nationality_F.setText(model.getValueAt(MyIndex, 4).toString());
+        roomNumCB.setSelectedItem(model.getValueAt(MyIndex, 5).toString());
+        hostelID_F.setText(model.getValueAt(MyIndex, 6).toString());
+    }//GEN-LAST:event_checkInTableMouseClicked
+
+    private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
+        // TODO add your handling code here:
+        
+        if(stdID_F.getText().isEmpty() || stdName_F.getText().isEmpty() || genderCB.getSelectedIndex() == -1 || contact_F.getText().isEmpty() || Nationality_F.getText().isEmpty() || hostelID_F.getText().isEmpty() || roomNumCB.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(this, "Select The Student to be Updated From the Table Above");
+        }
+        else{
+        try{
+            CheckInDate = checkInDate.getDate();
+            myCheckInDate = new java.sql.Date(CheckInDate.getTime());
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            String ID = stdID_F.getText();
+            String Query = "update student set studentID='"+stdID_F.getText()+"',studentName='"+stdName_F.getText()+"', gender='"+genderCB.getSelectedItem().toString()+"' ,contact='"+contact_F.getText()+"',nationality='"+Nationality_F.getText()+"',roomNumber='"+roomNumCB.getSelectedItem().toString()+"',hostelID='"+hostelID_F.getText()+"',checkInDate='"+myCheckInDate+"' where studentID='"+ID+"'";
+            Statement Add = con.createStatement();
+            Add.executeUpdate(Query);
+            JOptionPane.showMessageDialog(this, "Student Updated Successfully");
+            DisplayStudnents();
+            Reset();
+            
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "An Error Occured!");
+            e.printStackTrace();
+        }}
+    }//GEN-LAST:event_updateBtnActionPerformed
+
+    private void Reset(){
+        hostelID_F.setText("");
+        stdID_F.setText("");
+        stdName_F.setText("");
+        contact_F.setText("");
+        Nationality_F.setText("");
+        genderCB.setSelectedIndex(0);
+    }
     /**
      * @param args the command line arguments
      */
