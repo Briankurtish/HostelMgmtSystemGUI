@@ -103,6 +103,11 @@ public class HostelMgmt extends javax.swing.JFrame {
         });
 
         deleteBtn.setText("Delete");
+        deleteBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteBtnActionPerformed(evt);
+            }
+        });
 
         clearBtn.setText("Clear");
         clearBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -275,6 +280,31 @@ private void DisplayHostels()
         // TODO add your handling code here:
         Reset();
     }//GEN-LAST:event_clearBtnActionPerformed
+
+    private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
+        // TODO add your handling code here:
+        
+        if(hostelID_F.getText().isEmpty())
+        {
+            JOptionPane.showMessageDialog(this, "Select The Hostel to be Deleted");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            int Id = Integer.valueOf(hostelID_F.getText());
+            String Query = "Delete from hostel where hostelID ='"+Id+"'";
+            Statement Add = con.createStatement();
+            Add.executeUpdate(Query);
+            JOptionPane.showMessageDialog(this, "Hostel Deleted Successfully");
+            DisplayHostels();
+            Reset();
+            
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "An Error Occured");
+            e.printStackTrace();
+        }}
+    }//GEN-LAST:event_deleteBtnActionPerformed
 
     private void Reset(){
         hostelID_F.setText("");
