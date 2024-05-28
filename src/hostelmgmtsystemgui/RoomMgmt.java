@@ -3,6 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package hostelmgmtsystemgui;
+import java.sql.Connection;
+import java.sql.*;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import net.proteanit.sql.DbUtils;
 
 /**
  *
@@ -15,7 +20,44 @@ public class RoomMgmt extends javax.swing.JFrame {
      */
     public RoomMgmt() {
         initComponents();
+        DisplayRooms();
+        GetHostels();
     }
+    
+        Connection con = null;
+Statement st = null;
+ResultSet Rs = null;
+    private void GetHostels()
+{
+    try
+    {
+        con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+        st = con.createStatement();
+        String query = " select * from hostel";
+        Rs = st.executeQuery(query);
+        while(Rs.next()){
+            String Hostel = Rs.getString("name");
+            hostelNameCB.addItem(Hostel);
+        }
+    }
+    catch(Exception e)
+    {
+        e.printStackTrace();
+    }
+}
+    
+    private void DisplayRooms()
+{
+    try{
+        con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+        st = con.createStatement();
+        Rs = st.executeQuery("select * from room");
+        roomTable.setModel(DbUtils.resultSetToTableModel(Rs));
+    }
+    catch(SQLException e){
+        e.printStackTrace();
+    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -27,37 +69,43 @@ public class RoomMgmt extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        roomTable = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        roomNumber_F = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
+        hostelID_F = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        addBtn = new javax.swing.JButton();
+        updateBtn = new javax.swing.JButton();
+        deleteBtn = new javax.swing.JButton();
+        clearBtn = new javax.swing.JButton();
+        statusCB = new javax.swing.JComboBox<>();
+        typeCB = new javax.swing.JComboBox<>();
         jLabel7 = new javax.swing.JLabel();
-        jComboBox3 = new javax.swing.JComboBox<>();
+        hostelNameCB = new javax.swing.JComboBox<>();
+        getHID = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        roomTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Room Number", "Hostel ID", "Hostel Name", "Occupancy Status", "Type"
+                "Room Number", "Hostel ID", "Occupancy Status", "Type"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        roomTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                roomTableMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(roomTable);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI Black", 1, 24)); // NOI18N
         jLabel1.setText("ROOM MANAGEMENT");
@@ -74,25 +122,42 @@ public class RoomMgmt extends javax.swing.JFrame {
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel6.setText("Type");
 
-        jButton1.setText("Add");
-
-        jButton2.setText("Update");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        addBtn.setText("Add");
+        addBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                addBtnActionPerformed(evt);
             }
         });
 
-        jButton3.setText("Delete");
+        updateBtn.setText("Update");
+        updateBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateBtnActionPerformed(evt);
+            }
+        });
 
-        jButton4.setText("Clear");
+        deleteBtn.setText("Delete");
+        deleteBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteBtnActionPerformed(evt);
+            }
+        });
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Available", "Occupied" }));
+        clearBtn.setText("Clear");
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Single", "Double" }));
+        statusCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Available", "Occupied" }));
+
+        typeCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Single", "Double" }));
 
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel7.setText("Hostel Name");
+
+        getHID.setText("Get");
+        getHID.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                getHIDActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -105,43 +170,45 @@ public class RoomMgmt extends javax.swing.JFrame {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 900, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(35, 35, 35))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(addBtn)
                         .addGap(31, 31, 31)
-                        .addComponent(jButton2)
+                        .addComponent(updateBtn)
                         .addGap(28, 28, 28)
-                        .addComponent(jButton3)
+                        .addComponent(deleteBtn)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton4)
+                        .addComponent(clearBtn)
                         .addGap(276, 276, 276))))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(134, 134, 134)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel4)
                                     .addComponent(jLabel7))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jTextField3, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                                    .addComponent(jComboBox3, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(109, 109, 109)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel6))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jComboBox1, 0, 217, Short.MAX_VALUE)))
+                                    .addComponent(hostelID_F, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                                    .addComponent(hostelNameCB, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jTextField2))))
+                                .addComponent(roomNumber_F)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(getHID)
+                        .addGap(31, 31, 31)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(typeCB, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(statusCB, 0, 217, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(344, 344, 344)
                         .addComponent(jLabel1)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(105, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -151,27 +218,28 @@ public class RoomMgmt extends javax.swing.JFrame {
                 .addGap(56, 56, 56)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(roomNumber_F, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hostelID_F, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(statusCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel7)
-                        .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(hostelNameCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(getHID))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel6)
-                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(29, 29, 29)
+                        .addComponent(typeCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(28, 28, 28)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3)
-                    .addComponent(jButton4))
+                    .addComponent(addBtn)
+                    .addComponent(updateBtn)
+                    .addComponent(deleteBtn)
+                    .addComponent(clearBtn))
                 .addGap(39, 39, 39)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(49, Short.MAX_VALUE))
@@ -180,10 +248,123 @@ public class RoomMgmt extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
+        
+        if(roomNumber_F.getText().isEmpty() || hostelID_F.getText().isEmpty() || statusCB.getSelectedIndex() == -1 || typeCB.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(this, "Select The Room to be Updated From the Table Above");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            String ID = roomNumber_F.getText();
+            String Query = "update room set roomNumber='"+roomNumber_F.getText()+"',hostelID='"+hostelID_F.getText()+"',occupancyStatus='"+statusCB.getSelectedItem().toString()+"',roomType='"+typeCB.getSelectedItem().toString()+"' where roomNumber='"+ID+"'";
+            Statement Add = con.createStatement();
+            Add.executeUpdate(Query);
+            JOptionPane.showMessageDialog(this, "Room Updated Successfully");
+            DisplayRooms();
+            Reset();
+            
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "An Error Occured!");
+            e.printStackTrace();
+        }}
+    }//GEN-LAST:event_updateBtnActionPerformed
 
+    private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
+        // TODO add your handling code here:
+        
+        if(roomNumber_F.getText().isEmpty() || hostelID_F.getText().isEmpty() || statusCB.getSelectedIndex() == -1 || typeCB.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(this, "Missing Information. Fill all the fields to continue");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            PreparedStatement add = con.prepareStatement("insert into room values(?,?,?,?)");
+            add.setString(1, roomNumber_F.getText());
+            add.setString(2, hostelID_F.getText());
+            add.setString(3, statusCB.getSelectedItem().toString());
+            add.setString(4, typeCB.getSelectedItem().toString());
+            int row = add.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Room Added Successfully");
+            DisplayRooms();
+            Reset();
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "Error adding Room");
+            e.printStackTrace();
+        }}
+    }//GEN-LAST:event_addBtnActionPerformed
+
+    private void getHIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getHIDActionPerformed
+        // TODO add your handling code here:
+        
+        try
+    {
+        con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+        st = con.createStatement();
+        String hosteName = hostelNameCB.getSelectedItem().toString();
+        String query = " select * from hostel where name='"+hosteName+"'";
+        Rs = st.executeQuery(query);
+        while(Rs.next()){
+            String hosteID = Rs.getString("hostelID");
+            
+            hostelID_F.setText(hosteID);
+        
+        }
+    }
+    catch(Exception e)
+    {
+        e.printStackTrace();
+    }
+    }//GEN-LAST:event_getHIDActionPerformed
+
+    private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
+        // TODO add your handling code here:
+        
+        if(roomNumber_F.getText().isEmpty())
+        {
+            JOptionPane.showMessageDialog(this, "Select The Room to be Deleted");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            String Id = roomNumber_F.getText();
+            String Query = "Delete from room where roomNumber ='"+Id+"'";
+            Statement Add = con.createStatement();
+            Add.executeUpdate(Query);
+            JOptionPane.showMessageDialog(this, "Room Deleted Successfully");
+            DisplayRooms();
+            Reset();
+            
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "An Error Occured");
+            e.printStackTrace();
+        }}
+    }//GEN-LAST:event_deleteBtnActionPerformed
+
+    private void roomTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_roomTableMouseClicked
+        // TODO add your handling code here:
+        
+        DefaultTableModel model = (DefaultTableModel)roomTable.getModel();
+        int MyIndex = roomTable.getSelectedRow();
+        roomNumber_F.setText(model.getValueAt(MyIndex, 0).toString());
+        hostelID_F.setText(model.getValueAt(MyIndex, 1).toString());
+        statusCB.setSelectedItem(model.getValueAt(MyIndex, 2).toString());
+        typeCB.setSelectedItem(model.getValueAt(MyIndex, 3).toString());
+    }//GEN-LAST:event_roomTableMouseClicked
+
+    
+    private void Reset(){
+        roomNumber_F.setText("");
+        hostelID_F.setText("");
+        statusCB.setSelectedIndex(0);
+        typeCB.setSelectedIndex(0);
+    }
     /**
      * @param args the command line arguments
      */
@@ -221,13 +402,12 @@ public class RoomMgmt extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
-    private javax.swing.JComboBox<String> jComboBox3;
+    private javax.swing.JButton addBtn;
+    private javax.swing.JButton clearBtn;
+    private javax.swing.JButton deleteBtn;
+    private javax.swing.JButton getHID;
+    private javax.swing.JTextField hostelID_F;
+    private javax.swing.JComboBox<String> hostelNameCB;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -235,8 +415,10 @@ public class RoomMgmt extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
+    private javax.swing.JTextField roomNumber_F;
+    private javax.swing.JTable roomTable;
+    private javax.swing.JComboBox<String> statusCB;
+    private javax.swing.JComboBox<String> typeCB;
+    private javax.swing.JButton updateBtn;
     // End of variables declaration//GEN-END:variables
 }
