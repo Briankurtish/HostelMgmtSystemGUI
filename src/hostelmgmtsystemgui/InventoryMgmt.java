@@ -4,6 +4,16 @@
  */
 package hostelmgmtsystemgui;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import net.proteanit.sql.DbUtils;
+
 /**
  *
  * @author Cipher
@@ -15,6 +25,29 @@ public class InventoryMgmt extends javax.swing.JFrame {
      */
     public InventoryMgmt() {
         initComponents();
+    }
+    
+    Connection con = null;
+Statement st = null;
+ResultSet Rs = null;
+private void DisplayItems()
+{
+    try{
+        con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+        st = con.createStatement();
+        Rs = st.executeQuery("select * from inventory");
+        inventoryTable.setModel(DbUtils.resultSetToTableModel(Rs));
+    }
+    catch(SQLException e){
+        e.printStackTrace();
+    }
+}
+
+private void Reset(){
+        itemID.setText("");
+        itemName.setText("");
+        qty_F.setText("");
+        statusCB.setSelectedIndex(0);
     }
 
     /**
@@ -28,26 +61,26 @@ public class InventoryMgmt extends javax.swing.JFrame {
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        inventoryTable = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        itemID = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        itemName = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        statusCB = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
-        jTextField5 = new javax.swing.JTextField();
+        qty_F = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI Black", 1, 24)); // NOI18N
         jLabel1.setText(" INVENTORY MANAGEMENT ");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        inventoryTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -55,10 +88,15 @@ public class InventoryMgmt extends javax.swing.JFrame {
                 {null, null, null, null}
             },
             new String [] {
-                "Staff ID", "Name", "Role", "Contact"
+                "Item ID", "Item name", "Quantity", "Status"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        inventoryTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                inventoryTableMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(inventoryTable);
 
         jLabel2.setText("Item ID");
 
@@ -68,11 +106,23 @@ public class InventoryMgmt extends javax.swing.JFrame {
 
         jLabel7.setText("Status");
 
-        jButton1.setText("Add Staff");
+        statusCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Available", "Occupied" }));
 
-        jButton2.setText("Update Staff");
+        jButton1.setText("Add Item");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
-        jButton3.setText("Delete Staff");
+        jButton2.setText("Update Item");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setText("Delete Item");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
@@ -104,11 +154,11 @@ public class InventoryMgmt extends javax.swing.JFrame {
                                             .addGroup(layout.createSequentialGroup()
                                                 .addComponent(jLabel2)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addComponent(itemID, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE))
                                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                                 .addComponent(jLabel3)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addComponent(itemName, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                         .addGap(26, 26, 26))
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addComponent(jButton1)
@@ -125,8 +175,8 @@ public class InventoryMgmt extends javax.swing.JFrame {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(jComboBox2, 0, 165, Short.MAX_VALUE)
-                                            .addComponent(jTextField5))
+                                            .addComponent(statusCB, 0, 165, Short.MAX_VALUE)
+                                            .addComponent(qty_F))
                                         .addGap(61, 61, 61)
                                         .addComponent(jButton4))
                                     .addComponent(jButton3)))))
@@ -149,18 +199,19 @@ public class InventoryMgmt extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel2)
-                                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(itemID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                             .addComponent(jLabel3)
-                                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addComponent(itemName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                         .addGap(1, 1, 1))
-                                    .addComponent(jTextField5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(qty_F, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel7)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel7)
+                                    .addComponent(statusCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel6)
                                 .addGap(1, 1, 1)))
@@ -180,11 +231,98 @@ public class InventoryMgmt extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
+        
+        if(itemID.getText().isEmpty())
+        {
+            JOptionPane.showMessageDialog(this, "Select The Item to be Deleted");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            int Id = Integer.valueOf(itemID.getText());
+            String Query = "Delete from inventory where itemID ='"+Id+"'";
+            Statement Add = con.createStatement();
+            Add.executeUpdate(Query);
+            JOptionPane.showMessageDialog(this, "Item Deleted Successfully");
+            DisplayItems();
+            Reset();
+            
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "An Error Occured");
+            e.printStackTrace();
+        }}
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // TODO add your handling code here:
+        Reset();
     }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        
+        if(itemID.getText().isEmpty() || itemName.getText().isEmpty() || qty_F.getText().isEmpty() || statusCB.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(this, "Missing Information. Fill all the fields to continue");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            PreparedStatement add = con.prepareStatement("insert into inventory values(?,?,?,?)");
+            add.setString(1, itemID.getText());
+            add.setString(2, itemName.getText());
+            add.setString(3, qty_F.getText());
+            add.setString(4, statusCB.getSelectedItem().toString());
+            
+          
+            int row = add.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Item Added Successfully");
+            DisplayItems();
+            Reset();
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "Error adding Item");
+            e.printStackTrace();
+        }}
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        
+        if(itemID.getText().isEmpty() || itemName.getText().isEmpty() || qty_F.getText().isEmpty() || statusCB.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(this, "Select The Staff to be Updated From the Table Above");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            String ID = itemID.getText();
+            String Query = "update inventory set itemID='"+itemID.getText()+"',itemName='"+itemName.getText()+"', quantity='"+qty_F.getText()+"',status='"+statusCB.getSelectedItem().toString()+"' where itemID='"+ID+"'";
+            Statement Add = con.createStatement();
+            Add.executeUpdate(Query);
+            JOptionPane.showMessageDialog(this, "Item Updated Successfully");
+            DisplayItems();
+            Reset();
+            
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "An Error Occured!");
+            e.printStackTrace();
+        }}
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void inventoryTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_inventoryTableMouseClicked
+        // TODO add your handling code here:
+        
+        DefaultTableModel model = (DefaultTableModel)inventoryTable.getModel();
+        int MyIndex = inventoryTable.getSelectedRow();
+        itemID.setText(model.getValueAt(MyIndex, 0).toString());
+        itemName.setText(model.getValueAt(MyIndex, 1).toString());
+        qty_F.setText(model.getValueAt(MyIndex, 2).toString());
+        statusCB.setSelectedItem(model.getValueAt(MyIndex, 3).toString());
+        
+    }//GEN-LAST:event_inventoryTableMouseClicked
 
     /**
      * @param args the command line arguments
@@ -229,20 +367,20 @@ public class InventoryMgmt extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable inventoryTable;
+    private javax.swing.JTextField itemID;
+    private javax.swing.JTextField itemName;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
-    private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField5;
+    private javax.swing.JTextField qty_F;
+    private javax.swing.JComboBox<String> statusCB;
     // End of variables declaration//GEN-END:variables
 }
