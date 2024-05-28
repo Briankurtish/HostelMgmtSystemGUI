@@ -105,6 +105,11 @@ public class HostelMgmt extends javax.swing.JFrame {
         deleteBtn.setText("Delete");
 
         clearBtn.setText("Clear");
+        clearBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearBtnActionPerformed(evt);
+            }
+        });
 
         statusCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Available", "Full" }));
 
@@ -203,6 +208,27 @@ private void DisplayHostels()
 }
     private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
         // TODO add your handling code here:
+        
+        if(hostelID_F.getText().isEmpty() || hostelName_F.getText().isEmpty() || location_F.getText().isEmpty() || numRooms_F.getText().isEmpty() || statusCB.getSelectedIndex() == -1)
+        {
+            JOptionPane.showMessageDialog(this, "Select The Hostel to be Updated From the Table Above");
+        }
+        else{
+        try{
+            con = DriverManager.getConnection("jdbc:mysql://localhost/hosteldb", "root", "root");
+            String ID = hostelID_F.getText();
+            String Query = "update hostel set hostelID='"+hostelID_F.getText()+"',name='"+hostelName_F.getText()+"', location='"+location_F.getText()+"' ,numberOfRooms='"+numRooms_F.getText()+"', AvailabilityStatus='"+statusCB.getSelectedItem().toString()+"' where hostelID='"+ID+"'";
+            Statement Add = con.createStatement();
+            Add.executeUpdate(Query);
+            JOptionPane.showMessageDialog(this, "Hostel Updated Successfully");
+            DisplayHostels();
+            Reset();
+            
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(this, "An Error Occured!");
+            e.printStackTrace();
+        }}
     }//GEN-LAST:event_updateBtnActionPerformed
 
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
@@ -244,6 +270,11 @@ private void DisplayHostels()
         statusCB.setSelectedItem(model.getValueAt(MyIndex, 4).toString());
         
     }//GEN-LAST:event_hostelTableMouseClicked
+
+    private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBtnActionPerformed
+        // TODO add your handling code here:
+        Reset();
+    }//GEN-LAST:event_clearBtnActionPerformed
 
     private void Reset(){
         hostelID_F.setText("");
